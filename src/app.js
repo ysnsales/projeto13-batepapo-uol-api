@@ -142,7 +142,7 @@ app.post("/status", async (req, res) => {
         }
         await db.collection("participants").updateOne(
             { _id: participant._id },
-            { $set: participant }
+            { $set: {lastStatus : Date.now() }}
         )
         res.sendStatus(200)
 
@@ -150,6 +150,11 @@ app.post("/status", async (req, res) => {
         res.status(500).send(err.message);
     }
 })
+
+setInterval(async () => { 
+
+
+}, 15000)
 // Deixa o app escutando, à espera de requisições
 const PORT = 5000
 app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`)) 
