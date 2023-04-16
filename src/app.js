@@ -144,7 +144,7 @@ app.post("/status", async (req, res) => {
             { _id: participant._id },
             { $set: participant }
         )
-        res.sendStatus(201)
+        res.sendStatus(200)
 
     }catch(err){
         res.status(500).send(err.message);
