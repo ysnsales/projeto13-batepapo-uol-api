@@ -4,6 +4,7 @@ import { MongoClient, ObjectId } from "mongodb";
 import dotenv from "dotenv"
 import joi from "joi";
 import dayjs from "dayjs";
+import { stripHtml } from "string-strip-html";
 
 //Criação do APP Servidor
 const app = express();
@@ -22,6 +23,9 @@ mongoClient
   .catch((err) => console.log(err.message));
 
 //Endpoints
+function sanitizeString(value) {
+    return stripHtml(value).result.trim();
+  }
 
 app.post("/participants", async (req, res) => {
     const { name } = req.body
@@ -43,7 +47,7 @@ app.post("/participants", async (req, res) => {
 
         await db.collection("participants").insertOne({name, lastStatus:Date.now()})
 
-        const message = {from: name,
+        const message = {from: sanitizeString(name),
             to: 'Todos',
             text: 'entra na sala...',
             type: 'status',
@@ -89,7 +93,7 @@ app.post("/messages", async (req, res) => {
         if (!participant) {
             return res.status(422)
         }
-        const message = {from, to, text, type, time: dayjs().format("HH:mm:ss")}
+        const message = {from, to, text:sanitizeString(text), type, time: dayjs().format("HH:mm:ss")}
         await db.collection("messages").insertOne(message)
         res.sendStatus(201)
     } catch (err) {
