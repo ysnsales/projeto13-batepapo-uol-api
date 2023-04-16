@@ -100,7 +100,7 @@ app.get("/messages", async (req, res) => {
     const limit = Number(req.query.limit);
 
     if (isNaN(limit) || limit <= 0 ) {
-        return res.status(422);
+        return res.sendStatus(422);
     }
     try {
         const messages = await db.collection("messages")
@@ -108,6 +108,23 @@ app.get("/messages", async (req, res) => {
         .limit(limit)
         .toArray()
         res.send(messages)
+    } catch (err) {
+        res.status(500).send(err.message)
+    }
+})
+
+app.delete("/messages/:id", async (req, res) => {
+    const { id } = req.params
+    const user = req.headers.user;
+
+    try {
+        const message = await db.collection("messages").findOne({ _id: new ObjectId(id) })
+        if (!message.from === user) return res.sendStatus(401)
+
+        const result = await db.collection("messages").deleteOne({ _id: new ObjectId(id)  })
+        if (result.deletedCount === 0) return res.status(404).send("Não ha receitas com esse critério")
+        res.send("Item deletado com sucesso!")
+
     } catch (err) {
         res.status(500).send(err.message)
     }
