@@ -152,8 +152,19 @@ app.post("/status", async (req, res) => {
 })
 
 setInterval(async () => { 
+    const now = Date.now()
+    const inativeParticipants = await db.collection("participants").filter(participant => now - participant.lastStatus >= 100000);
 
-
+    const remove = inativeParticipants.map(participant => {
+        const message = { 
+            from: participant.name,
+            to: 'Todos',
+            text: 'sai da sala...',
+            type: 'status',
+            time: dayjs().format("HH:mm:ss")
+        }
+        db.collection("messages").insertOne(message)
+    })
 }, 15000)
 // Deixa o app escutando, à espera de requisições
 const PORT = 5000
