@@ -119,10 +119,10 @@ app.delete("/messages/:id", async (req, res) => {
 
     try {
         const message = await db.collection("messages").findOne({ _id: new ObjectId(id) })
-        if (!message.from === user) return res.sendStatus(401)
+        if (!message) return res.sendStatus(404)
+        if (message.from != user) return res.sendStatus(401)
 
-        const result = await db.collection("messages").deleteOne({ _id: new ObjectId(id)  })
-        if (result.deletedCount === 0) return res.status(404).send("Não ha receitas com esse critério")
+        await db.collection("messages").deleteOne({ _id: new ObjectId(id)  })
         res.send("Item deletado com sucesso!")
 
     } catch (err) {
@@ -152,10 +152,10 @@ app.post("/status", async (req, res) => {
 })
 
 setInterval(async () => { 
-    const now = Date.now()
+    let now = Date.now()
     const inativeParticipants = await db.collection("participants").filter(participant => now - participant.lastStatus >= 100000);
 
-    const remove = inativeParticipants.map(participant => {
+    inativeParticipants.map(participant => {
         const message = { 
             from: participant.name,
             to: 'Todos',
@@ -164,6 +164,7 @@ setInterval(async () => {
             time: dayjs().format("HH:mm:ss")
         }
         db.collection("messages").insertOne(message)
+        db.collection("participants").deleteMany({name : {$in: participant.name}})
     })
 }, 15000)
 // Deixa o app escutando, à espera de requisições
