@@ -46,10 +46,19 @@ app.post("/participants", async (req, res) => {
             to: 'Todos',
             text: 'entra na sala...',
             type: 'status',
-            time: dayjs().hour() 
+            time: dayjs().format("HH:mm:ss")
         }
         await db.collection("messages").insertOne(message)
         res.sendStatus(201)
+    } catch (err) {
+        res.status(500).send(err.message)
+    }
+})
+
+app.get("/participants", async (req, res) => {
+    try {
+        const participants = await db.collection("participants").find().toArray()
+        res.send(participants)
     } catch (err) {
         res.status(500).send(err.message)
     }
