@@ -97,7 +97,11 @@ app.post("/messages", async (req, res) => {
 
 app.get("/messages", async (req, res) => {
     const user = req.headers.user;
-    const limit = parseInt(req.query.limit);
+    const limit = Number(req.query.limit);
+
+    if (isNaN(limit) || limit <= 0 ) {
+        return res.status(422);
+    }
     try {
         const messages = await db.collection("messages")
         .find({ $or: [ { to: "Todos"}, { to: user }, {from: user}, {type: "public"} ] } )
@@ -109,6 +113,26 @@ app.get("/messages", async (req, res) => {
     }
 })
 
+app.post("/status", async (req, res) => {
+    const user = req.headers.user;
+
+    if (!user) return res.sendStatus(404)
+
+    try {
+        const participant = await db.collection("participants").findOne({name : user})
+        if (!participant) {
+            return res.sendStatus(404)
+        }
+        await db.collection("participants").updateOne(
+            { _id: participant._id },
+            { $set: participant }
+        )
+        res.sendStatus(201)
+
+    }catch(err){
+        res.status(500).send(err.message);
+    }
+})
 // Deixa o app escutando, à espera de requisições
 const PORT = 5000
 app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`)) 
