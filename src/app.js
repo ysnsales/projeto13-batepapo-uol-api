@@ -45,7 +45,7 @@ app.post("/participants", async (req, res) => {
         const participant = await db.collection("participants").findOne({ name: name })
         if (participant) return res.status(409).send("Esse nome já está em uso.")
 
-        await db.collection("participants").insertOne({name, lastStatus:Date.now()})
+        await db.collection("participants").insertOne({name: sanitizeString(name), lastStatus:Date.now()})
 
         const message = {from: sanitizeString(name),
             to: 'Todos',
