@@ -193,7 +193,7 @@ app.post("/status", async (req, res) => {
 setInterval(async () => { 
     let now = Date.now()
     try{
-        const inativeParticipants = await db.collection("participants").filter(participant => now - participant.lastStatus >= 100000);
+        const inativeParticipants = await db.collection("participants").find(participant => now - participant.lastStatus >= 100000).toArray();
 
     inativeParticipants.map(async participant => {
         const message = { 
