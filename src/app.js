@@ -193,9 +193,11 @@ app.post("/status", async (req, res) => {
 })
 
 setInterval(async () => { 
-    let now = Date.now()
+    let inativeTime = Date.now() - 10000;
     try{
-        const inativeParticipants = await db.collection("participants").find(participant => now - participant.lastStatus >= 100000).toArray();
+        const inativeParticipants = await db.collection("participants").find({ lastStatus: { $lte: inativeTime}}).toArray()
+
+        if (!inativeParticipants || inativeParticipants === []) return res.sendStatus(200)
 
     inativeParticipants.map(async participant => {
         const message = { 
@@ -206,10 +208,10 @@ setInterval(async () => {
             time: dayjs().format("HH:mm:ss")
         }
         await db.collection("messages").insertOne(message)
-        await db.collection("participants").deleteMany({name : {$in: participant.name}})
+        await db.collection("participants").deleteMany({ lastStatus: { $lte: inativeTime}})
     })
     }catch(err){
-
+        res.status(500).send(err.message);
     }
 }, 15000)
 // Deixa o app escutando, à espera de requisições
