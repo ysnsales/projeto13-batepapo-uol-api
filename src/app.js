@@ -91,7 +91,7 @@ app.post("/messages", async (req, res) => {
     try {
         const participant = await db.collection("participants").findOne({name : from})
         if (!participant) {
-            return res.status(422)
+            return res.sendStatus(422)
         }
         const message = {from, to, text:sanitizeString(text), type, time: dayjs().format("HH:mm:ss")}
         await db.collection("messages").insertOne(message)
@@ -159,9 +159,10 @@ app.post("/status", async (req, res) => {
 
 setInterval(async () => { 
     let now = Date.now()
-    const inativeParticipants = await db.collection("participants").filter(participant => now - participant.lastStatus >= 100000);
+    try{
+        const inativeParticipants = await db.collection("participants").filter(participant => now - participant.lastStatus >= 100000);
 
-    inativeParticipants.map(participant => {
+    inativeParticipants.map(async participant => {
         const message = { 
             from: participant.name,
             to: 'Todos',
@@ -169,9 +170,12 @@ setInterval(async () => {
             type: 'status',
             time: dayjs().format("HH:mm:ss")
         }
-        db.collection("messages").insertOne(message)
-        db.collection("participants").deleteMany({name : {$in: participant.name}})
+        await db.collection("messages").insertOne(message)
+        await db.collection("participants").deleteMany({name : {$in: participant.name}})
     })
+    }catch(err){
+
+    }
 }, 15000)
 // Deixa o app escutando, à espera de requisições
 const PORT = 5000
