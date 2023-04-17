@@ -139,6 +139,7 @@ app.delete("/messages/:id", async (req, res) => {
 
 app.put("/messages/:id", async (req, res) => {
     const { id } = req.params;
+    const {to, text, type} = req.body
     const from = req.headers.user;
 
     if (!from || from === null) return res.sendStatus(422)
