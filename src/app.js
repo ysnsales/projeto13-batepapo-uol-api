@@ -156,14 +156,16 @@ app.put("/messages/:id", async (req, res) => {
     }
 
     try {
-        const participant = await db.collection("participants").findOne({name : from})
-        if (!participant) return res.sendStatus(422)
+        const participant = await db.collection("participants").findOne({_id : new ObjectId(id)})
+        if (!participant) return res.sendStatus(404)
+        if (participant.name != from) return res.sendStatus(401)
         
         const result = await db.collection("messages").updateOne(
             { _id: new ObjectId(id) },
             { $set: req.body }
         )
         if (result.matchedCount === 0) return res.sendStatus(404)
+        res.sendStatus(200)
     } catch (err) {
         res.status(500).send(err.message)
     }
