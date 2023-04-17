@@ -164,7 +164,7 @@ app.put("/messages/:id", async (req, res) => {
             { _id: new ObjectId(id) },
             { $set: req.body }
         )
-        if (result.matchedCount === 0) return res.sendStatus(404)
+        if (result.matchedCount === 0) return res.sendStatus(404);
         res.sendStatus(200)
     } catch (err) {
         res.status(500).send(err.message)
